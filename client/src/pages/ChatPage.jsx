@@ -27,24 +27,6 @@ export const loader = async ({ params }) => {
   }
 };
 
-// export const action = async ({ params, request }) => {
-//   const { id: chatId } = params;
-//   console.log(request);
-//   const formData = await request.formData();
-//   const { text } = Object.fromEntries(formData);
-
-//   // console.log(text);
-
-//   try {
-//     await customFetch.post("/message", { text, chat: chatId });
-//     console.log("message sent");
-//   } catch (error) {
-//     console.log(error?.response?.data?.msg);
-//   }
-
-//   return null;
-// };
-
 const ChatPage = () => {
   const { chat, messagesOfTheChat } = useLoaderData();
   const { currentUser, socket, onlineUsers } = useOutletContext();
@@ -56,14 +38,20 @@ const ChatPage = () => {
   const [isRecipientUserTyping, setIsRecipientUserTyping] = useState(false);
   const bottomRef = useRef(null);
   const navigate = useNavigate();
-  // const location = useLocation()
   const params = useParams();
 
-  // console.log(chat);
-  // console.log(stateChat);
-
   const openChatId = params.id;
-  // console.log(moment().format("DD-MM-YYYY hh-mm-ss"))
+  const recipientUser = stateChat.members.find(
+    (member) => member._id !== currentUser._id
+  );
+
+  const isReciprocalUserBlocked =
+    recipientUser.blocklist.includes(currentUser._id) ||
+    currentUser.blocklist.some((user) => user._id === recipientUser._id);
+
+  const isRecipientUserOnline = onlineUsers.includes(recipientUser._id);
+
+  const lastMsgSender = stateMessagesOfTheChat.slice(-1)[0]?.sender;
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "instant" });
@@ -71,6 +59,10 @@ const ChatPage = () => {
 
   const handelSubmit = async (e) => {
     e.preventDefault();
+
+    if (!text) {
+      return;
+    }
 
     let msgBodyForSocket = {
       chat: stateChat._id,
@@ -112,28 +104,8 @@ const ChatPage = () => {
       });
   }, []);
 
-  // console.log(stateChat);
-
-  const recipientUser = stateChat.members.find(
-    (member) => member._id !== currentUser._id
-  );
-
-  // console.log(recipientUser)
-
-  const isReciprocalUserBlocked =
-    recipientUser.blocklist.includes(currentUser._id) ||
-    currentUser.blocklist.some((user) => user._id === recipientUser._id);
-
-  // console.log(isReciprocalUserBlocked);
-
-  const isRecipientUserOnline = onlineUsers.includes(recipientUser._id);
-
-  const lastMsgSender = stateMessagesOfTheChat.slice(-1)[0]?.sender;
-  // console.log(lastMsgSender)
-
   useEffect(() => {
     const updateChatsAndMsg = async () => {
-      // console.log('danger')
       try {
         await customFetch.patch(`/chat/${openChatId}`, { lastMsgSender });
         console.log("msg read updated for the chat");
@@ -142,10 +114,7 @@ const ChatPage = () => {
       }
     };
 
-    // console.log(isReciprocalUserBlocked)
-
     if (lastMsgSender !== currentUser._id) {
-      // console.log('in')
       const activeChatInfo = {
         openChatId,
         lastMsgSender,
@@ -160,9 +129,7 @@ const ChatPage = () => {
     socket
       .off("receive-active-chatInfo-two")
       .on("receive-active-chatInfo-two", (data) => {
-        // console.log(data)
         setStateMessagesOfTheChat((prev) => {
-          console.log("in");
           return prev.map((msg) => {
             if (msg.sender === data.lastMsgSender) {
               return { ...msg, read: true, updatedAt: getCurrentDateTime() };
@@ -175,7 +142,6 @@ const ChatPage = () => {
 
   useEffect(() => {
     socket.off("receive-show-typing").on("receive-show-typing", (data) => {
-      // console.log('typing')
       if (data.openChatId === openChatId && data.typer !== currentUser._id) {
         bottomRef.current?.scrollIntoView({ behavior: "instant" });
         setIsRecipientUserTyping(true);
@@ -235,9 +201,8 @@ const ChatPage = () => {
           const messageBody = message.text
             .split("\n")
             .map((line) => <p>{line}</p>);
-          // console.log(messageBody);
+
           const { _id, read, createdAt, updatedAt } = message;
-          // console.log(read)
 
           return (
             <div
@@ -273,11 +238,7 @@ const ChatPage = () => {
 
       {/* {SEND MESSAGE} */}
       <div className="p-4 ">
-        <div
-          className="flex gap-2 w-full"
-          // method="post"
-          // preventScrollReset={true}
-        >
+        <div className="flex gap-2 w-full">
           <textarea
             name="text"
             placeholder="type here..."
@@ -298,7 +259,7 @@ const ChatPage = () => {
           <button
             type="submit"
             disabled={isReciprocalUserBlocked}
-            className="btn btn-xs text-accent-focus sm:btn-sm md:btn-md"
+            className="btn btn-xs text-error sm:btn-sm md:btn-md"
             onClick={handelSubmit}
             onKeyDown={(e) => {
               console.log(e.key);

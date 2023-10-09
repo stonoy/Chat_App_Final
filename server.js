@@ -33,7 +33,7 @@ if (process.env.NODE_ENV === "development") {
   app.use(morgan("dev"));
 }
 
-app.use(express.static(path.resolve(__dirname, "./client/dist")));
+app.use(express.static(path.resolve(__dirname, "./client/dist"))); // PROVIDING FRONTEND APP
 app.use(express.json());
 app.use(cookieParser());
 app.use(helmet());
@@ -43,6 +43,7 @@ app.use(mongoSanitize());
 //   res.send("welcome");
 // });
 
+// LIST OF THE ONLINE USERS => SOCKET CONNECTION DO NOT STORE ANY DATA
 let onlineUsers = [];
 
 io.on("connection", (socket) => {
@@ -53,7 +54,6 @@ io.on("connection", (socket) => {
   });
 
   socket.on("send-msg", (msgBody) => {
-    // console.log(msgBody);
     console.log(msgBody.chat);
     io.to(msgBody.members[0]._id)
       .to(msgBody.members[1]._id)
@@ -92,12 +92,7 @@ io.on("connection", (socket) => {
     io.emit("receive-show-online-two", onlineUsers);
   });
 
-  // socket.on('create-new-msg', (data) => {
-  //   io.to(data.members[0]._id).to(data.members[1]._id).emit('send-new-msg', data)
-  // })
-
   socket.on("send-deleteAll-chat", (data) => {
-    // console.log(data);
     io.to(data.members[0]._id)
       .to(data.members[1]._id)
       .emit("receive-deleteAll-chat-one", data);
@@ -108,16 +103,9 @@ io.on("connection", (socket) => {
   });
 
   socket.on("send-block-update", (data) => {
-    // console.log(data);
     io.to(data.blockUserId).emit("receive-block-update-one", data);
     io.to(data.blockUserId).emit("receive-block-update-two", data);
   });
-
-  // socket.on("send-deleteMe-chat", (data) => {
-  //   io.to(data.members[0]._id)
-  //     .to(data.members[1]._id)
-  //     .emit("receive-deleteMe-chat", data);
-  // });
 });
 
 app.use("/api/node/auth", authRouter);
@@ -126,7 +114,7 @@ app.use("/api/node/chat", authentication, chatRouter);
 app.use("/api/node/message", authentication, messageRouter);
 
 app.get("*", (req, res) => {
-  res.sendFile(path.resolve(__dirname, "./client/dist", "index.html"));
+  res.sendFile(path.resolve(__dirname, "./client/dist", "index.html")); // SERVER GIVEING FRONTEND APP TO USERS
 });
 
 app.use(Not_Found);

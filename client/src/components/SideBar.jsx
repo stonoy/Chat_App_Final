@@ -23,14 +23,9 @@ const SideBar = ({ stateChats, onlineUsers, socket }) => {
   const [isSideBarOpen, setIsSideBarOpen] = useState(true);
   let { allUsers, currentUser } = useLoaderData();
   const navigate = useNavigate();
-  const location = useLocation();
   const submit = useSubmit();
 
-  // console.log(screen.width);
-  // console.log(location);
-
   const bigScreen = screen.width > 767;
-  // console.log(stateChats);
 
   const toggleButton = isSideBarOpen ? (
     <BsArrowBarLeft
@@ -63,14 +58,6 @@ const SideBar = ({ stateChats, onlineUsers, socket }) => {
       console.log(error?.response?.data?.msg);
     }
   };
-
-  // const deleteMeChat = (deleteChatId, members) => {
-  //   socket.emit("send-deleteMe-chat", {
-  //     deleteChatId,
-  //     members,
-  //     deleter: currentUser._id,
-  //   });
-  // };
 
   const deleteAllChat = async (deleteChatId, members) => {
     socket.emit("send-deleteAll-chat", {
@@ -110,7 +97,6 @@ const SideBar = ({ stateChats, onlineUsers, socket }) => {
         {/* {SEARCH USERS RESULT} */}
         <div className="border-2 border-neutral-content w-full">
           {allUsers.map((user) => {
-            // console.log(stateChats);
             let hadChat = false;
             stateChats.forEach((chat) =>
               chat.members.forEach((member) => {
@@ -119,7 +105,6 @@ const SideBar = ({ stateChats, onlineUsers, socket }) => {
                 }
               })
             );
-            // console.log(hadChat);
             if (user._id === currentUser._id) {
               return;
             }
@@ -128,7 +113,7 @@ const SideBar = ({ stateChats, onlineUsers, socket }) => {
                 className="btn btn-md flex flex-row justify-center items-center w-full text-xs text-base-content border-base-300 my-1 md:text-base"
                 key={user._id}
               >
-                {user.name}
+                <h2 className="text-md capitalize">{user.name}</h2>
                 {hadChat ? (
                   <NavLink to={`./chat/${hadChat._id}`}>
                     <BsFillArrowUpRightCircleFill className="text-base" />
@@ -147,13 +132,10 @@ const SideBar = ({ stateChats, onlineUsers, socket }) => {
         {/* {CHAT HEADS HERE} */}
         <div className=" w-full ">
           {stateChats.map((chat) => {
-            // if (!chat.lastMessage && ) {
-            //   return;
-            // }
             const recipientUser = chat.members.find(
               (member) => member._id !== currentUser._id
             );
-            console.log(recipientUser);
+
             const isRecipientUserOnline = onlineUsers.includes(
               recipientUser._id
             );
@@ -172,7 +154,10 @@ const SideBar = ({ stateChats, onlineUsers, socket }) => {
               >
                 <div className="flex flex-col gap-1 w-full">
                   <div className="flex gap-1 justify-center items-center">
-                    <a className="text-md" href={`/dashboard/chat/${chat._id}`}>
+                    <a
+                      className="text-md capitalize"
+                      href={`/dashboard/chat/${chat._id}`}
+                    >
                       {recipientUser.name}
                     </a>
                     {isRecipientUserOnline && !isReciprocalUserBlocked && (
@@ -193,13 +178,6 @@ const SideBar = ({ stateChats, onlineUsers, socket }) => {
                         tabIndex={0}
                         className="dropdown-content z-[1] menu p-1 shadow bg-base-100 rounded-box w-fit md:p-2"
                       >
-                        {/* <li
-                          onClick={() => deleteMeChat(chat._id, chat.members)}
-                        >
-                          <a className="whitespace-nowrap text-xs md:text-sm">
-                            Delete For Me
-                          </a>
-                        </li> */}
                         <li
                           onClick={() => deleteAllChat(chat._id, chat.members)}
                         >

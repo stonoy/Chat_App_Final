@@ -1,5 +1,11 @@
-import React from "react";
-import { Form, Link, redirect, useActionData } from "react-router-dom";
+import React, { useEffect } from "react";
+import {
+  Form,
+  Link,
+  redirect,
+  useActionData,
+  useNavigation,
+} from "react-router-dom";
 import { customFetch } from "../utils/all";
 import chat_svg from "/chat-svg.svg";
 
@@ -24,13 +30,20 @@ export const action = async ({ request }) => {
   }
 };
 
-const Login = () => {
+const Login = ({ getTheme }) => {
   const err = useActionData();
+  const navigation = useNavigation();
+  const isSubmitting = navigation.state === "submitting";
+
+  useEffect(() => {
+    getTheme();
+  }, []);
+
   return (
     <main className="hero min-h-screen bg-base-200">
       <div className="hero-content align-element flex-col gap-2 lg:flex-row lg:gap-4">
         <div className="text-center flex flex-col justify-center  lg:text-left">
-          <h1 className="text-5xl text-accent-focus font-bold">Login now!</h1>
+          <h1 className="text-5xl text-accent font-bold">Login now!</h1>
           <p className="py-6 text-lg">
             A real-time chat application is a software application that enables
             users to exchange messages and communicate with each other in
@@ -80,7 +93,10 @@ const Login = () => {
             </div>
             <div className="form-control mt-4">
               <button className="btn btn-accent" type="submit">
-                Login
+                Login{" "}
+                {isSubmitting && (
+                  <span className="loading loading-spinner"></span>
+                )}
               </button>
             </div>
             {err && <p className="text-error w-fit mx-auto font-bold">{err}</p>}

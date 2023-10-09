@@ -1,5 +1,11 @@
 import React from "react";
-import { Form, Link, redirect, useActionData } from "react-router-dom";
+import {
+  Form,
+  Link,
+  redirect,
+  useActionData,
+  useNavigation,
+} from "react-router-dom";
 import { customFetch } from "../utils/all";
 
 export const action = async ({ request }) => {
@@ -25,6 +31,9 @@ export const action = async ({ request }) => {
 
 const Register = () => {
   const err = useActionData();
+  const navigation = useNavigation();
+  const isSubmitting = navigation.state === "submitting";
+
   return (
     <main className="hero min-h-screen bg-base-200">
       <div className="card flex-shrink-0 w-full max-w-sm shadow-2xl bg-base-100">
@@ -73,7 +82,12 @@ const Register = () => {
             </label>
           </div>
           <div className="form-control mt-4">
-            <button className="btn btn-accent">Register</button>
+            <button className="btn btn-accent">
+              Register{" "}
+              {isSubmitting && (
+                <span className="loading loading-spinner"></span>
+              )}
+            </button>
           </div>
           {err && <p className="text-error w-fit mx-auto font-bold">{err}</p>}
         </Form>

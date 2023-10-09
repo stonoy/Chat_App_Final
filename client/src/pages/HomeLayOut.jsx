@@ -28,7 +28,7 @@ export const loader = async ({ request }) => {
     const {
       data: { chats },
     } = await customFetch.get("/chat");
-    // console.log(chats);
+
     return { allUsers, currentUser, chats };
   } catch (error) {
     console.log(error?.response?.data?.msg);
@@ -36,16 +36,14 @@ export const loader = async ({ request }) => {
   }
 };
 
-const HomeLayOut = ({ socket }) => {
+const HomeLayOut = ({ socket, getTheme }) => {
   const navigation = useNavigation();
   const navigate = useNavigate();
   const { currentUser, chats } = useLoaderData();
   const [stateChats, setStateChats] = useState(chats);
+  const [stateTheme, setStateTheme] = useState(getTheme());
   const [onlineUsers, setOnlineUsers] = useState([]);
   const isLoading = navigation.state === "loading";
-
-  // console.log(chats);
-  // console.log(stateChats);
 
   const logout = async () => {
     socket.emit("logout", currentUser._id);
@@ -56,6 +54,13 @@ const HomeLayOut = ({ socket }) => {
     } catch (error) {
       console.log(error?.response?.data?.msg);
     }
+  };
+
+  const toggleTheme = () => {
+    const newTheme = stateTheme === "cupcake" ? "luxury" : "cupcake";
+    document.documentElement.setAttribute("data-theme", newTheme);
+    localStorage.setItem("theme", newTheme);
+    setStateTheme(newTheme);
   };
 
   useEffect(() => {
@@ -72,14 +77,12 @@ const HomeLayOut = ({ socket }) => {
 
   useEffect(() => {
     socket.off("send-new-msg").on("send-new-msg", (newChat) => {
-      console.log("1");
       setStateChats((prev) => [...prev, newChat]);
     });
   }, []);
 
   useEffect(() => {
     socket.off("receive-msg-two").on("receive-msg-two", (msgBody) => {
-      console.log("2");
       const { chat, sender, text, createdAt, members } = msgBody;
 
       setStateChats((prev) => {
@@ -91,10 +94,7 @@ const HomeLayOut = ({ socket }) => {
                 lastMessage: { sender, text, createdAt },
                 unreadMessages: chatItem.unreadMessages + 1,
               };
-              // if(sender !== currentUser._id){
-              //   modifiedChatItem = {...modifiedChatItem, unreadMessages: chatItem.unreadMessages + 1}
-              //   return modifiedChatItem
-              // }
+
               return modifiedChatItem;
             }
             return chatItem;
@@ -119,9 +119,6 @@ const HomeLayOut = ({ socket }) => {
     socket
       .off("receive-active-chatInfo-one")
       .on("receive-active-chatInfo-one", (data) => {
-        console.log("3");
-        console.log("hi");
-
         setStateChats((prev) => {
           return prev.map((chatItem) => {
             if (chatItem._id === data.openChatId) {
@@ -137,7 +134,6 @@ const HomeLayOut = ({ socket }) => {
     socket
       .off("receive-show-online-one")
       .on("receive-show-online-one", (onlineUsersData) => {
-        console.log(onlineUsersData.length);
         setOnlineUsers(onlineUsersData);
       });
   }, []);
@@ -146,15 +142,12 @@ const HomeLayOut = ({ socket }) => {
     socket
       .off("receive-show-online-two")
       .on("receive-show-online-two", (onlineUsersData) => {
-        console.log(onlineUsersData.length);
         setOnlineUsers(onlineUsersData);
       });
   }, []);
 
   useEffect(() => {
     function socketFunc(data) {
-      console.log("4");
-
       setStateChats((prev) => {
         return prev.filter((chat) => chat._id !== data.deleteChatId);
       });
@@ -190,32 +183,13 @@ const HomeLayOut = ({ socket }) => {
       });
   }, []);
 
-  // useEffect(() => {
-  //   socket.off("receive-deleteMe-chat").on("receive-deleteMe-chat", (data) => {
-  //     console.log("5");
-  //     if (currentUser._id === data.deleter) {
-  //       setStateChats((prev) => {
-  //         return prev.filter((chat) => chat._id !== data.deleteChatId);
-  //       });
-  //     }
-  //   });
-  // }, []);
-
-  // const createChat = async(id, name) => {
-  //   console.log(id)
-  //   socket.emit('create-new-msg', {members: [{_id: id, name}, {_id: currentUser._id, name: currentUser.name}], createdAt: getCurrentDateTime(), updatedAt: getCurrentDateTime()})
-
-  //   try {
-  //     await customFetch.post("/chat", { id });
-  //     console.log('new chat created')
-  //   } catch (error) {
-  //     console.log(error?.response?.data?.msg)
-  //   }
-  // }
-
   return (
     <main className="min-h-screen">
-      <Header logout={logout} />
+      <Header
+        logout={logout}
+        toggleTheme={toggleTheme}
+        stateTheme={stateTheme}
+      />
       <section className=" bg-base-300 h-screen">
         <div className="align-element grid grid-cols-[auto_1fr] gap-2 py-6 px-2 md:gap-6">
           <SideBar

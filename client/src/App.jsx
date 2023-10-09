@@ -17,7 +17,6 @@ import { ErrorElement } from "./components";
 import { action as loginAction } from "./pages/Login";
 import { action as registerAction } from "./pages/Register";
 import { action as createChatAction } from "./pages/CreateChat";
-// import { action as sendMessageAction } from "./pages/ChatPage";
 import { action as profileAction } from "./pages/Profile";
 import { action as removeBlockaction } from "./pages/RemoveBlock";
 
@@ -25,17 +24,18 @@ import { loader as dashboardLoader } from "./pages/HomeLayOut";
 import { loader as chatLoader } from "./pages/ChatPage";
 import { loader as adminLoader } from "./pages/Admin";
 
+const getTheme = () => {
+  const theme = localStorage.getItem("theme") || "cupcake";
+  document.documentElement.setAttribute("data-theme", theme);
+  return theme;
+};
+
 const router = createBrowserRouter([
   {
     path: "dashboard",
-    element: <HomeLayOut socket={socket} />,
+    element: <HomeLayOut socket={socket} getTheme={getTheme} />,
     errorElement: <ErrorPage />,
     loader: dashboardLoader,
-    // shouldRevalidate : ({ currentUrl }) => {
-    //   // only revalidate if the submission originates from
-    //   // the `/meal-plans/new` route.
-    //   return currentUrl.pathname === "/dashboard/chat/:id";
-    // },
     children: [
       {
         index: true,
@@ -47,12 +47,6 @@ const router = createBrowserRouter([
         element: <ChatPage />,
         errorElement: <ErrorElement />,
         loader: chatLoader,
-        // shouldRevalidate : ({ currentUrl }) => {
-        //   // only revalidate if the submission originates from
-        //   // the `/meal-plans/new` route.
-        //   return currentUrl.pathname === "/dashboard/chat/:id";
-        // },
-        // action: sendMessageAction,
       },
       {
         path: "createchat/:id",
@@ -78,7 +72,7 @@ const router = createBrowserRouter([
   },
   {
     path: "/",
-    element: <Login />,
+    element: <Login getTheme={getTheme} />,
     errorElement: <ErrorPage />,
     action: loginAction,
   },

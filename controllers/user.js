@@ -67,13 +67,6 @@ const updateUser = async (req, res, next) => {
   let userSender = await User.findOne({ _id: req.user.userId });
   let userToBlock = await User.findOne({ _id: req.params.id });
 
-  // if (!userSender) {
-  //   return next(
-  //     customApiError(`Request came from an invalid user: ${req.user.userId}`),
-  //     StatusCodes.BAD_REQUEST
-  //   );
-  // }
-
   if (!userToBlock) {
     return next(
       customApiError(`Block userId invalid: ${req.params.id}`),

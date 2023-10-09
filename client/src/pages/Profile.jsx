@@ -1,5 +1,5 @@
 import React from "react";
-import { Form, useOutletContext } from "react-router-dom";
+import { Form, useNavigation, useOutletContext } from "react-router-dom";
 import { customFetch } from "../utils/all";
 import { AiOutlineMinusCircle } from "react-icons/ai";
 
@@ -19,6 +19,9 @@ export const action = async ({ request }) => {
 
 const Profile = () => {
   const { currentUser } = useOutletContext();
+  const navigation = useNavigation();
+  const isSubmitting = navigation.state === "submitting";
+
   return (
     <div className="p-1 md:p-4">
       <Form method="post" className="flex gap-1 items-center">
@@ -31,9 +34,10 @@ const Profile = () => {
         />
         <button
           type="submit"
-          className="btn btn-xs text-accent-focus  ml-auto md:btn-sm"
+          className="btn btn-xs text-error  ml-auto md:btn-sm"
         >
           Submit
+          {isSubmitting && <span className="loading loading-spinner"></span>}
         </button>
       </Form>
 
@@ -44,15 +48,15 @@ const Profile = () => {
         <table className="min-w-full">
           <thead>
             <tr>
-              <th className="px-1 py-3 bg-base-200 text-center text-xs leading-4 font-medium text-neutral uppercase tracking-wider">
+              <th className="px-1 py-3 bg-base-100 text-center text-xs leading-4 font-medium text-base-content uppercase tracking-wider">
                 Name
               </th>
-              <th className="px-1 py-3 bg-base-200 text-center text-xs leading-4 font-medium text-neutral uppercase tracking-wider">
+              <th className="px-1 py-3 bg-base-100 text-base-content text-center text-xs leading-4 font-medium  uppercase tracking-wider">
                 UnBlock
               </th>
             </tr>
           </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
+          <tbody className=" divide-y divide-gray-200 border-2 border-neutral-content">
             {currentUser.blocklist.map((user, index) => (
               <tr key={index}>
                 <td className="px-6 py-4 whitespace-no-wrap">

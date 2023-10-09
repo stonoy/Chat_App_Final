@@ -5,17 +5,12 @@ import User from "../models/user.js";
 import customApiError from "../errors/cutomError.js";
 
 const getAllChats = async (req, res, next) => {
-  const userPresent = await User.findOne({ _id: req.user.userId });
+  const userPresent = await User.findOne({ _id: req.user.userId }); // REST CALLS TO BUY SOME TIME
   const userPresent1 = await User.findOne({ _id: req.user.userId });
   const userPresent2 = await User.findOne({ _id: req.user.userId });
   const userPresent3 = await User.findOne({ _id: req.user.userId });
   const userPresent4 = await User.findOne({ _id: req.user.userId });
   const userPresent5 = await User.findOne({ _id: req.user.userId });
-  // const userPresent6 = await User.findOne({_id: req.user.userId})
-  // const userPresent7 = await User.findOne({_id: req.user.userId})
-  // const userPresent8 = await User.findOne({_id: req.user.userId})
-  // const userPresent9 = await User.findOne({_id: req.user.userId})
-  // const userPresent10 = await User.findOne({_id: req.user.userId})
 
   const chats = await Chat.find({
     members: { $in: [req.user.userId] },
@@ -33,7 +28,7 @@ const createChat = async (req, res, next) => {
   let members = [];
   members.push(req.user.userId);
   members.push(req.body.id);
-  //   console.log(members);
+
   const chat = await Chat.create({ members });
 
   res.status(StatusCodes.CREATED).json({ chat });
